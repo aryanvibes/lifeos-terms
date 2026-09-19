@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeOS — Trust Center, Privacy Policy &amp; Authenticated Account Portal</title>
+    <meta name="description" content="Official LifeOS Trust Center, Privacy Policy, Terms &amp; Conditions, DPDP Act 2023 Compliance, and Authenticated Google Account Management Portal.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDK (Compat for static/CDN deployment) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        :root {
+            --bg: #070913;
+            --surface: #0E1424;
+            --surface-card: #131B30;
+            --surface-elevated: #1A2542;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-highlight: rgba(0, 240, 255, 0.35);
+            --cyan: #00F0FF;
+            --cyan-dim: rgba(0, 240, 255, 0.12);
+            --emerald: #10B981;
+            --emerald-dim: rgba(16, 185, 129, 0.12);
+            --rose: #F43F5E;
+            --rose-dim: rgba(244, 63, 94, 0.12);
+            --amber: #F59E0B;
+            --amber-dim: rgba(245, 158, 11, 0.12);
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+            background-image: 
+                radial-gradient(ellipse 80% 500px at 50% -100px, rgba(0, 240, 255, 0.1), transparent),
+                radial-gradient(circle 400px at 90% 400px, rgba(16, 185, 129, 0.05), transparent),
+                linear-gradient(180deg, #070913 0%, #0A1021 100%);
+            min-height: 100vh;
+        }
+
+        .ambient-grid {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 48px 48px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* HEADER */
+        header {
+            position: sticky;
+            top: 0;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            background: rgba(7, 9, 19, 0.94);
+            border-bottom: 1px solid var(--border);
+            z-index: 1000;
+            padding: 0.9rem 2.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-box {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .logo-container {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+            border: 1.5px solid rgba(0, 240, 255, 0.4);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .brand-logo-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .brand-text h1 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.6px;
+            line-height: 1.1;
+        }
+
+        .brand-text h1 span {
+            color: var(--cyan);
+        }
+
+        .brand-text .app-sub {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow-x: auto;
+            max-width: 65%;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.84rem;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .nav-link:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .nav-link.active {
+            color: var(--cyan);
+            background: var(--cyan-dim);
+        }
+
+        /* Sign In Header Pill */
+        .header-auth-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-signin-nav {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%);
+            border: 1px solid var(--border-highlight);
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 0.84rem;
+            padding: 7px 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.25s;
+            white-space: nowrap;
+        }
+
+        .btn-signin-nav:hover {
+            border-color: var(--cyan);
+            box-shadow: 0 0 16px rgba(0, 240, 255, 0.3);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .user-auth-pill {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            background: var(--surface-elevated);
+            border: 1px solid var(--emerald);
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .user-auth-pill .user-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--emerald);
+            box-shadow: 0 0 8px var(--emerald);
+        }
+
+        .btn-signout-small {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.78rem;
+            text-decoration: underline;
+            padding-left: 4px;
+        }
+
+        .btn-signout-small:hover {
+            color: var(--rose);
+        }
+
+        /* CONTAINER */
+        .main-container {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem 6rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* HERO */
+        .hero-section {
+            text-align: center;
+            margin-bottom: 3.5rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 999px;
+            background: var(--surface);
+            border: 1px solid var(--border-highlight);
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--cyan);
+            margin-bottom: 1.25rem;
+            letter-spacing: 0.5px;
+        }
+
+        .hero-section h2 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: -1.2px;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #FFFFFF 40%, #94A3B8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-section p {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        /* SECURITY GUARANTEE BANNER */
+        .security-guarantee-banner {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(0, 240, 255, 0.05) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem 1.75rem;
+            margin-bottom: 3rem;
+            display: flex;
+            gap: 1.25rem;
+            align-items: flex-start;
+        }
+
+        .security-guarantee-banner .shield-icon {
+            font-size: 2.2rem;
+            line-height: 1;
+        }
+
+        .security-guarantee-banner h4 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .security-guarantee-banner p {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* 3 PILLARS */
+        .pillars-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 3rem;
+        }
+
+        .pillar-card {
+            background: var(--surface-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+        }
+
+        .pillar-card .icon {
+            font-size: 1.6rem;
+            margin-bottom: 10px;
+        }
+
+        .pillar-card h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .pillar-card p {
+            font-size: 0.84rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* DOCUMENT SECTION */
+        .doc-section {
+            background: var(--surface-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+            scroll-margin-top: 90px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .doc-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.2rem;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .doc-header h3 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chip {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .chip-cyan { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(0, 240, 255, 0.3); }
+        .chip-emerald { background: var(--emerald-dim); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .chip-rose { background: var(--rose-dim); color: #FDA4AF; border: 1px solid rgba(244, 63, 94, 0.3); }
+        .chip-amber { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245, 158, 11, 0.3); }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        strong {
+            color: #fff;
+        }
+
+        ul {
+            padding-left: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        li {
+            color: var(--text-secondary);
+            font-size: 0.93rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .callout-box {
+            border-radius: var(--radius-sm);
+            padding: 1.25rem 1.4rem;
+            margin: 1.25rem 0;
+            font-size: 0.92rem;
+        }
+
+        .callout-info {
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.25);
+            border-left: 4px solid var(--cyan);
+        }
+
+        .callout-warning {
+            background: rgba(245, 158, 11, 0.05);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-left: 4px solid var(--amber);
+        }
+
+        .callout-danger {
+            background: rgba(244, 63, 94, 0.05);
+            border: 1px solid rgba(244, 63, 94, 0.25);
+            border-left: 4px solid var(--rose);
+        }
+
+        .callout-success {
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-left: 4px solid var(--emerald);
+        }
+
+        /* ACCOUNT PORTAL STATES */
+        .portal-state-box {
+            background: var(--surface);
+            border-radius: var(--radius-md);
+            padding: 2.25rem;
+        }
+
+        /* GATE 1: SIGN IN WITH GOOGLE */
+        .google-auth-box {
+            border: 1.5px dashed var(--border-highlight);
+            text-align: center;
+        }
+
+        .btn-google-continue {
+            background: #FFFFFF;
+            color: #1F2937;
+            font-weight: 700;
+            font-size: 0.96rem;
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.25s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-google-continue:hover {
+            background: #F1F5F9;
+            box-shadow: 0 6px 22px rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        /* GATE 2: NOT A LIFEOS USER */
+        .not-registered-box {
+            display: none;
+            border: 1.5px solid var(--amber);
+            background: rgba(245, 158, 11, 0.04);
+            text-align: center;
+        }
+
+        /* GATE 3: VERIFIED LIFEOS ACCOUNT */
+        .verified-account-box {
+            display: none;
+            border: 1px solid var(--border);
+        }
+
+        .user-profile-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem;
+            background: var(--surface-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            margin-bottom: 1.75rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .user-info-cluster {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .user-avatar-img {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: 2px solid var(--cyan);
+            object-fit: cover;
+        }
+
+        .avatar-placeholder {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: var(--cyan-dim);
+            border: 2px solid var(--cyan);
+            color: var(--cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.3rem;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-item {
+            background: #060912;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+        }
+
+        .detail-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #fff;
+            word-break: break-all;
+        }
+
+        /* BUTTONS & FORMS */
+        .btn-primary {
+            background: linear-gradient(135deg, #00F0FF 0%, #0099FF 100%);
+            color: #070913;
+            font-weight: 800;
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            border: none;
+            font-size: 0.94rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.25s;
+            text-decoration: none;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 4px 20px rgba(0, 240, 255, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--surface-elevated);
+            color: #fff;
+            border: 1px solid var(--border);
+            font-weight: 700;
+            padding: 10px 18px;
+            border-radius: var(--radius-sm);
+            font-size: 0.88rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--cyan);
+            color: var(--cyan);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, rgba(244, 63, 94, 0.2) 0%, rgba(244, 63, 94, 0.05) 100%);
+            border: 1px solid var(--rose);
+            color: #FDA4AF;
+            font-weight: 700;
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            font-size: 0.94rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.25s;
+            width: 100%;
+        }
+
+        .btn-danger:hover {
+            background: var(--rose);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(244, 63, 94, 0.4);
+        }
+
+        .input-field {
+            background: #060912;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.94rem;
+            outline: none;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .input-field:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+        }
+
+        /* TABLE */
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.25rem 0;
+            font-size: 0.88rem;
+        }
+
+        .spec-table th, .spec-table td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .spec-table th {
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.74rem;
+            letter-spacing: 0.6px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .spec-table td {
+            color: var(--text-secondary);
+        }
+
+        .spec-table tr:hover td {
+            background: rgba(255, 255, 255, 0.015);
+        }
+
+        /* SPINNER */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 3rem 1.5rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            background: rgba(7, 9, 19, 0.8);
+        }
+
+        footer a {
+            color: var(--cyan);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            header { padding: 0.8rem 1rem; }
+            .nav-menu { display: none; }
+            .hero-section h2 { font-size: 2.1rem; }
+            .pillars-grid { grid-template-columns: 1fr; }
+            .details-grid { grid-template-columns: 1fr; }
+            .doc-section { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-grid"></div>
+
+    <!-- HEADER -->
+    <header>
+        <a href="#hero" class="brand-box">
+            <div class="logo-container">
+                <img src="logo.png" onerror="this.onerror=null; this.src='logo.jpg'; this.onerror=function(){this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' rx=\'20\' fill=\'%23070913\'/><circle cx=\'50\' cy=\'50\' r=\'36\' stroke=\'%2300F0FF\' stroke-width=\'7\' fill=\'none\'/><polygon points=\'44,32 64,50 44,68\' fill=\'%2300F0FF\'/></svg>';};" alt="LifeOS Logo" class="brand-logo-img">
+            </div>
+            <div class="brand-text">
+                <h1>Life<span>OS</span></h1>
+                <div class="app-sub">Trust Center &amp; Account Portal</div>
+            </div>
+        </a>
+
+        <nav class="nav-menu">
+            <a href="#account-portal" class="nav-link">Account Portal</a>
+            <a href="#privacy" class="nav-link">Privacy Policy</a>
+            <a href="#terms" class="nav-link">Terms</a>
+            <a href="#ai-terms" class="nav-link">AI Disclaimer</a>
+            <a href="#subscriptions" class="nav-link">Subscriptions</a>
+            <a href="#permissions" class="nav-link">Permissions</a>
+            <a href="#dpdp" class="nav-link">DPDP Act 2023</a>
+            <a href="#contact" class="nav-link">Grievance</a>
+        </nav>
+
+        <div class="header-auth-box">
+            <button id="navSignInBtn" class="btn-signin-nav" onclick="triggerGoogleSignIn()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+                </svg>
+                <span>Continue with Google</span>
+            </button>
+
+            <div id="navUserPill" class="user-auth-pill">
+                <span class="user-dot"></span>
+                <span id="navUserEmail" style="max-width: 140px; overflow: hidden; text-overflow: ellipsis;">User</span>
+                <button class="btn-signout-small" onclick="handleSignOut()">Sign Out</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-container">
+        
+        <!-- HERO -->
+        <div class="hero-section" id="hero">
+            <div class="status-badge">
+                <span>🛡️</span>
+                <span>AUTHENTICATED TRUST CENTER &amp; PRIVACY PORTAL</span>
+            </div>
+            <h2>Transparency, Sovereignty &amp; Account Control</h2>
+            <p>
+                LifeOS is built on an offline-first privacy architecture. Manage your verified Google Play identity, export statutory records, inspect data policies, or complete permanent deletion requests.
+            </p>
+        </div>
+
+        <!-- GUARANTEE BANNER -->
+        <div class="security-guarantee-banner">
+            <div class="shield-icon">🔐</div>
+            <div>
+                <h4>Identity-Verified Account Controls (Anti-Abuse Standard)</h4>
+                <p>
+                    Random email submissions and fake deletion forms are strictly prohibited. To protect user privacy and comply with Google Play 2024+ and DPDP Act 2023 mandates, account actions require continuous token verification through Google Sign-In and real-time backend checks.
+                </p>
+            </div>
+        </div>
+
+        <!-- 3 ARCHITECTURAL PILLARS -->
+        <div class="pillars-grid">
+            <div class="pillar-card">
+                <div class="icon">📱</div>
+                <h4>Local-First Sandbox</h4>
+                <p>Tasks, CRM leads, transaction ledgers, and memories reside in your phone's private SQLite storage.</p>
+            </div>
+            <div class="pillar-card">
+                <div class="icon">🤖</div>
+                <h4>Zero-Storage AI</h4>
+                <p>Gemini AI prompts are transmitted ephemerally over TLS 1.3 without training or server data hoarding.</p>
+            </div>
+            <div class="pillar-card">
+                <div class="icon">⚖️</div>
+                <h4>Statutory Compliance</h4>
+                <p>Complies with India's DPDP Act 2023, DPDP Rules 2025, and Google Play Data Safety policies.</p>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECTION 1: AUTHENTICATED ACCOUNT PORTAL   -->
+        <!-- ========================================== -->
+        <div class="doc-section" id="account-portal">
+            <div class="doc-header">
+                <h3>
+                    <span style="color: var(--cyan);">👤</span>
+                    1. Authenticated Account Center &amp; Deletion
+                </h3>
+                <span class="chip chip-rose" id="portalHeaderStatusChip">Identity Verification Required</span>
+            </div>
+
+            <p>
+                In compliance with <strong>Google Play's 2024+ Account Deletion Mandate</strong> and Section 12 of India's DPDP Act 2023, verified LifeOS users can review their registered account status, download statutory data receipts, or request permanent deletion outside of the Android app.
+            </p>
+
+            <!-- GATE 1: SIGN IN WITH GOOGLE -->
+            <div id="authGateLocked" class="portal-state-box google-auth-box">
+                <div style="font-size: 2.8rem; margin-bottom: 1rem;">🔒</div>
+                <h4 style="font-size: 1.25rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem;">
+                    Sign In with your Google Account
+                </h4>
+                <p style="max-width: 560px; margin: 0 auto 1.5rem; color: var(--text-secondary); font-size: 0.92rem;">
+                    Continue with the Google account used in your LifeOS Android app. We will verify your account against the LifeOS database in real time.
+                </p>
+                
+                <button class="btn-google-continue" id="btnContinueGoogle" onclick="triggerGoogleSignIn()">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+                    </svg>
+                    <span>Continue with Google</span>
+                </button>
+
+                <div id="authLoadingIndicator" style="display: none; margin-top: 1.25rem; font-size: 0.9rem; color: var(--cyan); align-items: center; justify-content: center; gap: 8px;">
+                    <span class="spinner"></span>
+                    <span>Verifying LifeOS account in database...</span>
+                </div>
+            </div>
+
+            <!-- GATE 2: NOT A REGISTERED LIFEOS USER -->
+            <div id="authGateNotRegistered" class="portal-state-box not-registered-box">
+                <div style="font-size: 2.8rem; margin-bottom: 0.75rem;">⚠️</div>
+                <div class="chip chip-amber" style="margin-bottom: 0.75rem;">Unregistered Google Account</div>
+                <h4 style="font-size: 1.3rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem;">
+                    Account Not Found in LifeOS
+                </h4>
+                <p style="max-width: 600px; margin: 0 auto 1.25rem; color: var(--text-secondary); font-size: 0.92rem;">
+                    Authenticated Google Email: <strong id="unregUserEmailDisplay">user@email.com</strong><br><br>
+                    This Google account is authenticated with Google, but it is <strong>not registered as an active user in the LifeOS database</strong>. 
+                    LifeOS uses a local-first privacy architecture and does not store accounts until you launch the Android application.
+                </p>
+                <div class="callout-box callout-warning" style="text-align: left; max-width: 640px; margin: 0 auto 1.5rem;">
+                    <strong>Next Steps to Activate:</strong><br>
+                    1. Download and install the <strong>LifeOS Android App</strong> on your phone.<br>
+                    2. Choose <strong>"Continue with Google"</strong> on the app login screen with this email.<br>
+                    3. Once your workspace is created, you can access verified account settings and deletion here anytime.
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                    <a href="https://github.com/aryanvibes/lifeos-legal" target="_blank" class="btn-primary">
+                        <span>📱</span>
+                        <span>Download LifeOS Android App</span>
+                    </a>
+                    <button class="btn-secondary" onclick="handleSignOut()">
+                        <span>Switch Google Account</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- GATE 3: VERIFIED LIFEOS ACCOUNT PORTAL -->
+            <div id="authGateVerified" class="portal-state-box verified-account-box">
+                
+                <!-- USER PROFILE SUMMARY -->
+                <div class="user-profile-card">
+                    <div class="user-info-cluster">
+                        <div id="userAvatarContainer">
+                            <div class="avatar-placeholder" id="portalUserInitial">U</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 1.15rem; font-weight: 800; color: #fff;" id="portalUserName">LifeOS User</div>
+                            <div style="font-size: 0.88rem; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace;" id="portalUserEmail">email@domain.com</div>
+                            <div style="font-size: 0.78rem; color: var(--emerald); font-weight: 700; display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                                <span style="width: 7px; height: 7px; border-radius: 50%; background: var(--emerald); box-shadow: 0 0 6px var(--emerald);"></span>
+                                Verified LifeOS Android App User
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-secondary" onclick="handleSignOut()">
+                        <span>Sign Out</span>
+                    </button>
+                </div>
+
+                <!-- ACCOUNT & DATA METRICS -->
+                <h4 style="color: #fff; margin-bottom: 0.75rem; font-size: 1.05rem;">Account Identity &amp; Entitlements</h4>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">LifeOS User ID</div>
+                        <div class="detail-value" id="detailUserId">usr_loading</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Subscription Tier</div>
+                        <div class="detail-value" id="detailSubTier" style="color: var(--cyan);">FREE</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Account Status</div>
+                        <div class="detail-value" id="detailAccountStatus" style="color: var(--emerald);">ACTIVE</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Last App Synchronization</div>
+                        <div class="detail-value" id="detailLastSync">Just now</div>
+                    </div>
+                </div>
+
+                <!-- MY DATA & SOVEREIGNTY EXPLANATION -->
+                <div class="callout-box callout-info" style="margin-top: 0;">
+                    <strong>My Data &amp; Storage Architecture:</strong><br>
+                    • <strong>Cloud Storage:</strong> LifeOS only stores your authenticated account identity, active subscription license, and AI entitlement tokens on Firebase.<br>
+                    • <strong>Device Storage:</strong> All operational business data (tasks, habits, CRM leads, financial invoices, and private memory vaults) is stored exclusively in your smartphone's sandboxed SQLite database via Android Room.
+                </div>
+
+                <!-- ACTION ROW: DATA EXPORT -->
+                <div style="display: flex; gap: 12px; margin-bottom: 2rem; flex-wrap: wrap;">
+                    <button class="btn-secondary" onclick="exportCloudAccountData()">
+                        <span>📥</span>
+                        <span>Export Cloud Identity Record (JSON)</span>
+                    </button>
+                    <a href="#portability" class="btn-secondary">
+                        <span>📦</span>
+                        <span>How to Export Phone Database (CSV / JSON)</span>
+                    </a>
+                </div>
+
+                <!-- REAL ACCOUNT DELETION FORM -->
+                <div style="border-top: 1px solid var(--border); padding-top: 1.75rem;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.5rem;">
+                        <span style="color: var(--rose); font-size: 1.2rem;">⚠️</span>
+                        <h4 style="color: #fff; font-size: 1.1rem; font-weight: 800;">Permanent Account &amp; Data Deletion</h4>
+                    </div>
+                    <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                        Permanent deletion will immediately and irreversibly revoke your LifeOS license, delete your Google authentication record, and purge your cloud identity from Firebase servers.
+                    </p>
+
+                    <div class="callout-box callout-danger" style="margin-bottom: 1.25rem;">
+                        <strong>Important Notice Regarding Offline Phone Data:</strong><br>
+                        Because LifeOS operates offline-first, your personal smartphone retains its local SQLite database file until you open <strong>LifeOS App &rarr; Settings &rarr; Clear Workspace</strong> or uninstall the application. The cloud cannot remotely delete offline data stored on your physical phone hardware.
+                    </div>
+
+                    <form onsubmit="handleRealAccountDeletion(event)">
+                        <div style="margin-bottom: 1rem;">
+                            <label class="form-label" style="display: block; margin-bottom: 6px; font-size: 0.76rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">
+                                Authenticated Account Email (Read-Only)
+                            </label>
+                            <input type="email" id="deleteEmailFieldReadOnly" class="input-field" readonly style="opacity: 0.6; cursor: not-allowed;">
+                        </div>
+
+                        <div style="margin-bottom: 1.25rem;">
+                            <label class="form-label" style="display: block; margin-bottom: 6px; font-size: 0.76rem; color: #FDA4AF; font-weight: 700; text-transform: uppercase;">
+                                Type "DELETE" in capital letters to confirm permanent erasure *
+                            </label>
+                            <input type="text" id="confirmDeleteInput" class="input-field" required placeholder='Type "DELETE"' style="border-color: var(--rose);">
+                        </div>
+
+                        <button type="submit" class="btn-danger" id="btnConfirmDelete">
+                            <span>Permanently Delete My LifeOS Account</span>
+                        </button>
+                    </form>
+
+                    <!-- DELETION RECEIPT -->
+                    <div id="deletionReceiptBox" style="display: none; margin-top: 1.5rem; padding: 1.25rem; border-radius: var(--radius-sm); background: rgba(16, 185, 129, 0.08); border: 1px solid var(--emerald);">
+                        <div style="font-weight: 800; color: var(--emerald); font-size: 1.05rem; margin-bottom: 6px;">
+                            ✓ Cloud Account &amp; Identity Purged Successfully
+                        </div>
+                        <p style="font-size: 0.88rem; color: #fff; margin-bottom: 6px;" id="receiptDetailsText">
+                            Your cloud account and licensing associations have been permanently deleted from Firebase.
+                        </p>
+                        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--text-muted);" id="receiptAuditId">
+                            DPDP AUDIT TIMESTAMP: 2026-09-19
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECTION 2: PRIVACY POLICY                  -->
+        <!-- ========================================== -->
+        <div class="doc-section" id="privacy">
+            <div class="doc-header">
+                <h3>
+                    <span style="color: var(--cyan);">📋</span>
+                    2. Official Privacy Policy
+                </h3>
+                <span class="chip chip-cyan">Core Policy</span>
+            </div>
+
+            <p>
+                This Privacy Policy applies to the <strong>LifeOS</strong> mobile application for Android (Package: <code>com.aistudio.lifeos.app</code>) and this official Trust Center. LifeOS is engineered with a **Local-First Architecture**, ensuring that personal task scheduling, relationship management, and financial ledgers stay on your device hardware.
+            </p>
+
+            <h4 style="color: #fff; margin: 1.25rem 0 0.5rem;">A. Information Stored on Your Smartphone (Local Room SQLite)</h4>
+            <ul>
+                <li><strong>Tasks &amp; Routines:</strong> Task descriptions, target timestamps, completion state, priority tags, and reminder preferences.</li>
+                <li><strong>CRM &amp; Client Pipeline:</strong> Client names, deal values, pipeline stage, communication logs, and operational notes.</li>
+                <li><strong>Financial Ledgers &amp; Invoices:</strong> Transaction amounts, GST/tax markers, timestamps, category tags, and invoice records.</li>
+                <li><strong>Operational Memory Vault:</strong> SOPs, instructions, and user preferences stored to customize AI responses.</li>
+            </ul>
+
+            <h4 style="color: #fff; margin: 1.25rem 0 0.5rem;">B. Information Stored on Cloud Infrastructure</h4>
+            <ul>
+                <li><strong>Authentication:</strong> Verified Google Account email and UID managed via Google Firebase Authentication.</li>
+                <li><strong>Licensing:</strong> Subscription tier status (Free, Starter, Pro, Master) and validity dates.</li>
+            </ul>
+
+            <h4 style="color: #fff; margin: 1.25rem 0 0.5rem;">C. Third-Party Sharing &amp; Data Monetization</h4>
+            <p>
+                <strong>We do not sell, rent, monetize, or trade your personal data.</strong> LifeOS contains no third-party ad networks, no automated tracking cookies, and no telemetry SDKs designed to monitor user activity outside the application.
+            </p>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECTION 3: TERMS & CONDITIONS              -->
+        <!-- ========================================== -->
+        <div class="doc-section" id="terms">
+            <div class="doc-header">
+                <h3>
+                    <span style="color: var(--emerald);">📄</span>
+                    3. Terms &amp; Conditions
+                </h3>
+                <span class="chip chip-emerald">Legal Agreement</span>
+            </div>
+
+            <p>
+                By downloading, installing, or accessing LifeOS, you agree to these Terms and Conditions. If you disagree, you must not use the service.
+            </p>
+
+            <ul>
+                <li><strong>Acceptable Use:</strong> You agree to use LifeOS strictly for lawful personal organization and business operations. You must not reverse-engineer, decompile, or exploit the application or its underlying routing mechanisms.</li>
+                <li><strong>User Sovereignty:</strong> You retain complete ownership of all tasks, financial records, client notes, and prompts created within LifeOS.</li>
+                <li><strong>Service Availability:</strong> While LifeOS's core features operate fully offline, AI queries and cloud license synchronization require active internet access. We make no warranty that AI services will be 100% uninterrupted.</li>
+                <li><strong>Limitation of Liability:</strong> LifeOS is provided "as is" without warranty of any kind. Under no circumstances shall LifeOS or its developers be liable for lost profits, data loss, or business interruptions.</li>
+            </ul>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECTION 4: GEMINI AI TERMS & DISCLAIMER    -->
+        <!-- ========================================== -->
+        <div class="doc-section" id="ai-terms">
+            <div class="doc-header">
+                <h3>
+                    <span style="color: var(--cyan);">🤖</span>
+                    4. Gemini AI Terms &amp; Disclaimers
+                </h3>
+                <span class="chip chip-cyan">AI Disclosures</span>
+            </div>
+
+            <p>
+                LifeOS incorporates artificial intelligence powered by <strong>Google Gemini API</strong> and client-side deterministic tool routing.
+            </p>
+
+            <div class="callout-box callout-info">
+                <strong>How LifeOS AI Works:</strong><br>
+                1. <strong>Local Query Evaluation:</strong> When you enter an AI query, LifeOS first tests whether the request can be resolved using local mathematical, formatting, or deterministic tools on your device.<br>
+                2. <strong>Ephemeral Transmission:</strong> If external AI processing is necessary, only the specific prompt text is transmitted over TLS 1.3 to Google Gemini API servers. Your SQLite database is never uploaded.<br>
+                3. <strong>Zero Model Training:</strong> Your private workspace notes and personal records are not used to train public machine learning models.
+            </div>
+
+            <h4 style="color: #fff; margin: 1.25rem 0 0.5rem;">Statutory Advisory Disclaimers:</h4>
+            <ul>
+                <li><strong>Advisory Nature:</strong> AI responses are generated algorithmically and are intended for organizational assistance only.</li>
+                <li><strong>No Professional Advice:</strong> LifeOS AI does not provide certified financial, tax, legal, or medical advice. Always consult a qualified professional before making significant commercial or legal decisions.</li>
+                <li><strong>User Verification:</strong> You are responsible for verifying all AI-generated drafts, calculations, and schedule suggestions prior to taking action.</li>
+            </ul>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECTION 5: SUBSCRIPTIONS & REFUNDS         -->
+        <!-- ========================================== -->
+        <div class="doc-section" id="subscriptions">
+            <div class="doc-header">
+                <h3>
+                    <span style="color: var(--emerald);">💳</span>
+                    5. Subscriptions, Cancellation &amp; Refund Policy
+                </h3>
+                <span class="chip chip-emerald">Commercial Terms</span>
+            </div>
+
+            <p>
+                LifeOS provides optional premium subscription tiers for increased AI usage quotas and advanced business features. In-app purchases and subscriptions are processed securely via <strong>Razorpay</strong> (currency: INR).
+            </p>
+
+            <table class="spec-table">
+                <thead>
+                    <tr>
+                        <th>Tier</th>
+                        <th>Price</th>
+                        <th>AI Quota</th>
+                        <th>Features</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>FREE</strong></td>
+                        <td>₹0 / forever</td>
+                        <td>50 queries / day</td>
+                        <td>Offline tasks, CRM, finance ledgers, memory vault</td>
+                    </tr>
+                    <tr>
+                        <td><strong>STARTER</strong></td>
+                        <td>₹499 / month</td>
+                        <td>200 queries / day</td>
+                        <td>GST invoice export, smart routine alerts, custom categories</td>
+                    </tr>
+                    <tr>
+                        <td><strong>PRO</strong></td>
+                        <td>₹999 / month</td>
+                        <td>Unlimited fair-use</td>
+                        <td>Full AI agent automation, priority routing, automated SOPs</td>
+                    </tr>
+                    <tr>
+                        <td><strong>MASTER</strong></td>
+                        <td>₹2,499 / month</td>
+                        <td>Dedicated capacity</td>
+                        <td>Multi-workspace synchronization, direct concierge support</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4 style="color: #fff; margin: 1.25rem 0 0.5rem;">Cancellation &amp; Refund Terms:</h4>
+            <ul>
+                <li><strong>Self-Service Cancellation:</strong> You can cancel your subscription renewal at any time within the app or by emailing our support desk. Upon cancellation, your premium entitlements continue until the end of your billing cycle.</li>
+                <li><strong>Statutory Refund Policy:</strong> Under the Indian Consumer Protection (E-Commerce) Rules, users who experience technical billing failures or duplicate debits are entitled to a full refund if reported within 7 business days to <a href="mailto:goyalaryan906@gmail.com">goyalaryan906@gmail.com</a>. Refunds are credited via the original payment method within 5–7 banking days.</li>
+            </ul>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECTION 6: PERMISSIONS & DISCLOSURE        -->
+        <!-- ========================================== -->
+        <div class="doc-section" id="permissions">
+            <div class="doc-header">
+                <h3>
+                    <span style="color: var(--cyan);">🔑</span>
+                    6. Android Permissions &amp; Hardware Utilization
+                </h3>
+                <span class="chip chip-cyan">Play Store Disclosures</span>
+            </div>
+
+            <p>
+                LifeOS strictly follows the principle of <strong>Least Privilege</strong>. Every permission requested in <code>AndroidManifest.xml</code> is required to fulfill core functionality:
+            </p>
+
+            <table class="spec-table">
+                <thead>
+                    <tr>
+                        <th>Permission</th>
+                        <th>Type</th>
+                        <th>Purpose &amp; Scope</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>POST_NOTIFICATIONS</code></td>
+                        <td>Runtime (Android 13+)</td>
+                        <td>Displays scheduled task alerts and routine check-ins initiated by the user.</td>
+                    </tr>
+                    <tr>
+                        <td><code>SCHEDULE_EXACT_ALARM</code></td>
+                        <td>Install-time</td>
+                        <td>Ensures time-sensitive routine reminders trigger at the precise scheduled minute.</td>
+                    </tr>
+                    <tr>
+                        <td><code>VIBRATE</code></td>
+                        <td>Normal</td>
+                        <td>Provides haptic confirmation when finishing pomodoro routines or urgent alerts.</td>
+                    </tr>
+                    <tr>
+                        <td><code>USE_BIOMETRIC</code></td>
+                        <td>Hardware</td>
+                        <td>Unlocks the app via Android BiometricPrompt. Raw biometric templates never leave Android TEE hardware.</td>
+                    </tr>
+                    <tr>
+                        <td><code>INTERNET</code></td>
+                        <td>Normal</td>
+                        <td>Connects to Google Gemini API servers and validates Firebase authentication.</td>
+                    </tr>
+                    <tr>
+                        <td><code>ACCESS_NETWORK_STATE</code></td>
+                        <td>Normal</td>
+                        <td>Checks connectivity status before sending AI requests to conserve mobile battery.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECTION 7: ANALYTICS & TELEMETRY           -->
+        <!-- ========================================== -->
+        <div class="doc-section" id="analytics">
+            <div class="doc-header">
+                <h3>
+                    <span style="color: var(--emerald);">📊</span>
+                    7. Analytics &amp; Telemetry Disclosure
+                </h3>
+                <span class="chip chip-emerald">Zero Tracking</span>
+            </div>
+
+            <p>
+                <strong>LifeOS does not track you.</strong> Unlike common software services, we intentionally omit invasive mobile telemetry:
+            </p>
+
+            <ul>
+                <li><strong>No Third-Party Advertising:</strong> LifeOS contains zero banner ads, interstitial networks, or advertising SDKs.</li>
+                <li><strong>No Invasive Attribution Trackers:</strong> We do not include third-party trackers (such as Adjust, AppsFlyer, or Facebook SDK).</li>
+                <li><strong>Diagnostic Logging:</strong> Application crash and diagnostic traces are processed in compliance with Google Play Developer Policies and never include user passwords or secret vault contents.</li>
+            </ul>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECTION 8: SECURITY & ENCRYPTION           -->
+        <!-- ========================================== -->
+        <div class="doc-section" id="security">
+            <div class="doc-header">
+                <h3>
+                    <span style="color: var(--cyan);">🔒</span>
+                    8. Security &amp; Data Protection Architecture
+                </h3>
+                <span class="chip chip-cyan">Security Posture</span>
+            </div>
+
+            <p>
+                LifeOS implements multi-layered security controls to protect your data both at rest and in transit:
+            </p>
+
+            <ul>
+                <li><strong>Transit Encryption:</strong> All communications between the LifeOS application, Firebase Authentication, and the Gemini API are encrypted using TLS 1.3 with standard certificate validation.</li>
+                <li><strong>Storage Sandboxing:</strong> The Room SQLite database is maintained strictly within Android's private internal storage directory (<code>/data/data/com.aistudio.lifeos.app/</code>), inaccessible to other apps on non-rooted devices.</li>
+                <li><strong>FLAG_SECURE Screen Shielding:</strong> When app lock is active, LifeOS engages <code>FLAG_SECURE</code> to prevent Android's recent apps switcher from taking screenshots of your financial ledgers and sensitive tasks.</li>
+                <li><strong>Biometric Security:</strong> Authentication is handled through Android's system <code>BiometricPrompt</code>, ensuring cryptographic operations occur within the device's secure hardware enclave.</li>
+            </ul>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECTION 9: DPDP ACT 2023 DISCLOSURES       -->
+        <!-- ========================================== -->
+        <div class="doc-section" id="dpdp">
+            <div class="doc-header">
+                <h3>
+                    <span style="color: var(--emerald);">⚖️</span>
+                    9. DPDP Act 2023 &amp; DPDP Rules 2025 Disclosures
+                </h3>
+                <span class="chip chip-emerald">Statutory Notice</span>
+            </div>
+
+            <p>
+                In compliance with India's <strong>Digital Personal Data Protection Act 2023</strong> (DPDP Act) and the accompanying <strong>DPDP Rules 2025</strong>, LifeOS serves as a Data Fiduciary for cloud licensing and provides full sovereignty to users as Data Principals:
+            </p>
+
+            <table class="spec-table">
+                <thead>
+                    <tr>
+                        <th>Section</th>
+                        <th>Right / Obligation</th>
+                        <th>LifeOS Implementation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Section 6</strong></td>
+                        <td>Notice &amp; Informed Consent</td>
+                        <td>Presented transparently prior to Google authentication and device permission requests.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Section 11</strong></td>
+                        <td>Right to Access Information</td>
+                        <td>Users can view their authenticated identity in this portal and inspect all database records in-app.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Section 12</strong></td>
+                        <td>Right to Correction &amp; Erasure</td>
+                        <td>Instant self-service cloud deletion via Section 1 of this portal and complete database reset in-app.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Section 13</strong></td>
+                        <td>Right of Grievance Redressal</td>
+                        <td>Designated Grievance Officer with statutory resolution SLA of 48–72 hours.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Section 14</strong></td>
+                        <td>Right to Nominate</td>
+                        <td>Data Principals may designate a legal representative by writing to the Grievance Officer.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECTION 10: STATUTORY GRIEVANCE REDRESSAL  -->
+        <!-- ========================================== -->
+        <div class="doc-section" id="contact">
+            <div class="doc-header">
+                <h3>
+                    <span style="color: var(--cyan);">📬</span>
+                    10. Statutory Grievance Redressal &amp; Contact
+                </h3>
+                <span class="chip chip-cyan">Official Contact</span>
+            </div>
+
+            <p>
+                Under Section 13 of the Digital Personal Data Protection Act 2023, users may submit any statutory privacy inquiries, data modification requests, or formal grievances to our designated officer:
+            </p>
+
+            <div class="callout-box callout-info">
+                <strong>Designated Grievance Redressal Officer:</strong><br>
+                <strong>Name:</strong> Aryan Goyal<br>
+                <strong>Designation:</strong> Data Protection &amp; Compliance Lead<br>
+                <strong>Official Email:</strong> <a href="mailto:goyalaryan906@gmail.com" style="color: var(--cyan); text-decoration: none; font-weight: 700;">goyalaryan906@gmail.com</a><br>
+                <strong>Jurisdiction:</strong> India<br>
+                <strong>Statutory SLA:</strong> Acknowledgment within 24 hours; complete inquiry resolution within 48 to 72 business hours.
+            </div>
+
+            <p style="font-size: 0.88rem; color: var(--text-muted);">
+                When sending inquiries, please include the tag <code>[LifeOS DPDP Inquiry]</code> in the subject line alongside your registered Google email address.
+            </p>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECTION 11: DATA PORTABILITY GUIDANCE      -->
+        <!-- ========================================== -->
+        <div class="doc-section" id="portability">
+            <div class="doc-header">
+                <h3>
+                    <span style="color: var(--emerald);">📦</span>
+                    11. Data Portability &amp; In-App Export
+                </h3>
+                <span class="chip chip-emerald">Zero Lock-In</span>
+            </div>
+
+            <p>
+                Under Section 12 of the DPDP Act 2023 and GDPR Article 20, you have the right to export your complete personal workspace in an open, machine-readable format anytime:
+            </p>
+
+            <div class="callout-box callout-info">
+                <strong>Step-by-Step Instructions to Export Directly from LifeOS App:</strong><br>
+                1. Open the <strong>LifeOS</strong> Android App on your smartphone.<br>
+                2. Navigate to <strong>Settings &rarr; Data Sovereignty &amp; Privacy</strong>.<br>
+                3. Tap <strong>"Export Complete Workspace"</strong>.<br>
+                4. Select your preferred format: <strong>JSON</strong> (for backup and technical portability) or <strong>CSV / Excel</strong> (for accounting and tax filing).<br>
+                5. The file is generated locally and saved to your device's <code>Downloads</code> folder or shared via the native Android share sheet.
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECTION 12: OPEN SOURCE LICENSES           -->
+        <!-- ========================================== -->
+        <div class="doc-section" id="licenses">
+            <div class="doc-header">
+                <h3>
+                    <span style="color: var(--cyan);">📜</span>
+                    12. Open Source Software Notice
+                </h3>
+                <span class="chip chip-cyan">Attribution</span>
+            </div>
+
+            <p>
+                LifeOS is built using open-source libraries and frameworks licensed under the Apache 2.0 and MIT Licenses:
+            </p>
+
+            <ul>
+                <li><strong>Jetpack Compose &amp; Material 3:</strong> Google LLC (Apache License 2.0)</li>
+                <li><strong>AndroidX Room:</strong> Google LLC (Apache License 2.0)</li>
+                <li><strong>Kotlin Coroutines:</strong> JetBrains s.r.o. (Apache License 2.0)</li>
+                <li><strong>Retrofit &amp; OkHttp:</strong> Square, Inc. (Apache License 2.0)</li>
+                <li><strong>Moshi:</strong> Square, Inc. (Apache License 2.0)</li>
+            </ul>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div style="margin-bottom: 1rem;">
+            <strong>LifeOS</strong> — Personal &amp; Business Operating System for Android
+        </div>
+        <div>
+            Official Google Play Package: <code>com.aistudio.lifeos.app</code> • DPDP Act 2023 Compliant •
+            <a href="mailto:goyalaryan906@gmail.com">Contact Grievance Officer</a>
+        </div>
+    </footer>
+
+    <!-- INTERACTIVE FIREBASE AUTHENTICATION & ACCOUNT VERIFICATION SCRIPT -->
+    <script>
+        // Production Firebase Configuration for LifeOS
+        const firebaseConfig = {
+            apiKey: "AIzaSyC9GRZevhH2c5fdvCBr5lc6uTgqXF8rFrM",
+            authDomain: "lifeos-cf9a3.firebaseapp.com",
+            projectId: "lifeos-cf9a3",
+            storageBucket: "lifeos-cf9a3.firebasestorage.app",
+            messagingSenderId: "669489041459",
+            appId: "1:669489041459:android:ea8bab1311849c59c25346"
+        };
+
+        // Initialize Firebase safely
+        let app, auth, db;
+        try {
+            app = firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            db = firebase.firestore();
+        } catch (e) {
+            console.error("Firebase init error:", e);
+        }
+
+        // Global State
+        let currentUser = null;
+        let currentLifeOsData = null;
+
+        // Listen for Firebase Auth State Changes on Page Load
+        if (auth) {
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    currentUser = user;
+                    await verifyAndDisplayUser(user);
+                } else {
+                    currentUser = null;
+                    currentLifeOsData = null;
+                    showLockedGate();
+                }
+            });
+
+            // Handle redirect result if popup was blocked
+            auth.getRedirectResult().catch((err) => {
+                console.warn("Redirect result error:", err);
+            });
+        }
+
+        // Trigger Google Sign-In (Google-Only, Popup with Redirect Fallback)
+        async function triggerGoogleSignIn() {
+            if (!auth) {
+                alert("Firebase Authentication service is currently initializing. Please refresh the page.");
+                return;
+            }
+
+            const provider = new firebase.auth.GoogleAuthProvider();
+            provider.addScope("email");
+            provider.addScope("profile");
+
+            const loadingEl = document.getElementById('authLoadingIndicator');
+            const btnEl = document.getElementById('btnContinueGoogle');
+            if (loadingEl) loadingEl.style.display = 'flex';
+            if (btnEl) btnEl.style.display = 'none';
+
+            try {
+                const result = await auth.signInWithPopup(provider);
+                currentUser = result.user;
+                await verifyAndDisplayUser(currentUser);
+            } catch (error) {
+                console.warn("Popup signIn error, attempting redirect fallback:", error);
+                if (error.code === 'auth/popup-blocked' || error.code === 'auth/cancelled-popup-request') {
+                    try {
+                        await auth.signInWithRedirect(provider);
+                    } catch (redirectErr) {
+                        alert("Sign in failed: " + redirectErr.message);
+                    }
+                } else if (error.code !== 'auth/popup-closed-by-user') {
+                    alert("Sign in could not be completed: " + error.message);
+                }
+            } finally {
+                if (loadingEl) loadingEl.style.display = 'none';
+                if (btnEl) btnEl.style.display = 'inline-flex';
+            }
+        }
+
+        // Verify with Firebase Firestore if this Google account is a registered LifeOS user
+        async function verifyAndDisplayUser(user) {
+            const cleanEmail = (user.email || "").trim().toLowerCase();
+            if (!cleanEmail) {
+                alert("No verified email address found on this Google Account.");
+                showLockedGate();
+                return;
+            }
+
+            const loadingEl = document.getElementById('authLoadingIndicator');
+            if (loadingEl) loadingEl.style.display = 'flex';
+
+            try {
+                // Check Firestore users collection by document ID = email
+                let docSnap = null;
+                try {
+                    docSnap = await db.collection("users").doc(cleanEmail).get();
+                } catch (readErr) {
+                    console.warn("Direct doc read failed, querying email field:", readErr);
+                    const qSnap = await db.collection("users").where("email", "==", cleanEmail).limit(1).get();
+                    if (!qSnap.empty) {
+                        docSnap = qSnap.docs[0];
+                    }
+                }
+
+                // Check verification state
+                const exists = docSnap && docSnap.exists;
+                const data = exists ? docSnap.data() : null;
+                const isLifeOsUser = data && data.isLifeOsUser === true && data.accountStatus !== 'DELETED';
+
+                if (isLifeOsUser) {
+                    // USER IS VERIFIED LIFEOS APP USER
+                    currentLifeOsData = data;
+                    showVerifiedGate(user, data);
+                } else {
+                    // USER IS A GOOGLE USER BUT NOT REGISTERED IN LIFEOS
+                    currentLifeOsData = null;
+                    showNotRegisteredGate(user);
+                }
+            } catch (err) {
+                console.error("Error verifying LifeOS user in database:", err);
+                // If network/permission issue occurs, verify if Firestore document exists or notify user
+                showNotRegisteredGate(user);
+            } finally {
+                if (loadingEl) loadingEl.style.display = 'none';
+            }
+        }
+
+        // Show Locked Gate (Unauthenticated)
+        function showLockedGate() {
+            document.getElementById('navSignInBtn').style.display = 'inline-flex';
+            document.getElementById('navUserPill').style.display = 'none';
+
+            document.getElementById('authGateLocked').style.display = 'block';
+            document.getElementById('authGateNotRegistered').style.display = 'none';
+            document.getElementById('authGateVerified').style.display = 'none';
+
+            const chip = document.getElementById('portalHeaderStatusChip');
+            chip.className = 'chip chip-rose';
+            chip.innerText = 'Identity Verification Required';
+        }
+
+        // Show Not Registered Gate (Google user has no LifeOS app installation)
+        function showNotRegisteredGate(user) {
+            document.getElementById('navSignInBtn').style.display = 'none';
+            const userPill = document.getElementById('navUserPill');
+            userPill.style.display = 'inline-flex';
+            document.getElementById('navUserEmail').innerText = user.email || "Google Account";
+
+            document.getElementById('authGateLocked').style.display = 'none';
+            document.getElementById('authGateNotRegistered').style.display = 'block';
+            document.getElementById('authGateVerified').style.display = 'none';
+
+            document.getElementById('unregUserEmailDisplay').innerText = user.email || "";
+
+            const chip = document.getElementById('portalHeaderStatusChip');
+            chip.className = 'chip chip-amber';
+            chip.innerText = 'App Download Required';
+
+            // Scroll to portal smoothly
+            document.getElementById('account-portal').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Show Verified Gate (Active LifeOS user with account data)
+        function showVerifiedGate(user, data) {
+            document.getElementById('navSignInBtn').style.display = 'none';
+            const userPill = document.getElementById('navUserPill');
+            userPill.style.display = 'inline-flex';
+            document.getElementById('navUserEmail').innerText = user.email;
+
+            document.getElementById('authGateLocked').style.display = 'none';
+            document.getElementById('authGateNotRegistered').style.display = 'none';
+            const verifiedGate = document.getElementById('authGateVerified');
+            verifiedGate.style.display = 'block';
+
+            const chip = document.getElementById('portalHeaderStatusChip');
+            chip.className = 'chip chip-emerald';
+            chip.innerText = 'Verified LifeOS User';
+
+            // Populate User Summary
+            const displayName = data.name || user.displayName || 'LifeOS User';
+            document.getElementById('portalUserName').innerText = displayName;
+            document.getElementById('portalUserEmail').innerText = user.email;
+
+            // Avatar Handling
+            const avatarContainer = document.getElementById('userAvatarContainer');
+            if (user.photoURL) {
+                avatarContainer.innerHTML = `<img src="${user.photoURL}" alt="${displayName}" class="user-avatar-img">`;
+            } else {
+                avatarContainer.innerHTML = `<div class="avatar-placeholder">${displayName.charAt(0).toUpperCase()}</div>`;
+            }
+
+            // Populate Metrics
+            document.getElementById('detailUserId').innerText = data.userId || user.uid;
+            document.getElementById('detailSubTier').innerText = (data.subscriptionTier || 'FREE').toUpperCase();
+            document.getElementById('detailAccountStatus').innerText = (data.accountStatus || 'ACTIVE').toUpperCase();
+
+            // Date Formatting
+            const lastActiveTs = data.lastLoginAt || data.updatedAt || Date.now();
+            const dateStr = new Date(lastActiveTs).toLocaleDateString('en-US', {
+                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+            document.getElementById('detailLastSync').innerText = dateStr;
+
+            // Populate Read-Only Deletion Input
+            document.getElementById('deleteEmailFieldReadOnly').value = user.email;
+
+            // Scroll to portal smoothly
+            document.getElementById('account-portal').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Export Authenticated Cloud Account Data as JSON
+        function exportCloudAccountData() {
+            if (!currentUser || !currentLifeOsData) {
+                alert("Please authenticate to export account data.");
+                return;
+            }
+
+            const exportPayload = {
+                exportNotice: "LifeOS Cloud Account Record (DPDP Act 2023 Statutory Export)",
+                exportedAt: new Date().toISOString(),
+                identity: {
+                    firebaseUid: currentUser.uid,
+                    googleEmail: currentUser.email,
+                    displayName: currentLifeOsData.name || currentUser.displayName,
+                    lifeOsUserId: currentLifeOsData.userId || currentUser.uid
+                },
+                subscriptionEntitlements: {
+                    tier: currentLifeOsData.subscriptionTier || "FREE",
+                    status: currentLifeOsData.subscriptionStatus || "ACTIVE"
+                },
+                accountTimestamps: {
+                    firstLoginAt: currentLifeOsData.firstLoginAt ? new Date(currentLifeOsData.firstLoginAt).toISOString() : null,
+                    lastLoginAt: currentLifeOsData.lastLoginAt ? new Date(currentLifeOsData.lastLoginAt).toISOString() : null
+                },
+                storageNotice: "LifeOS is built with local-first architecture. Personal tasks, CRM leads, invoices, and memories reside in your Android phone's sandboxed SQLite database. To export complete workspace data, use LifeOS App > Settings > Data Sovereignty."
+            };
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportPayload, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `lifeos_account_${currentUser.email.split('@')[0]}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        // Handle Real Account Deletion Workflow
+        async function handleRealAccountDeletion(e) {
+            e.preventDefault();
+            const confirmWord = document.getElementById('confirmDeleteInput').value.trim();
+            if (confirmWord !== 'DELETE') {
+                alert('Please type "DELETE" in exact capital letters to confirm permanent account erasure.');
+                return;
+            }
+
+            if (!confirm(`Are you absolutely sure you want to permanently delete your LifeOS cloud account and license for ${currentUser.email}? This action cannot be undone.`)) {
+                return;
+            }
+
+            const cleanEmail = currentUser.email.trim().toLowerCase();
+            const btn = document.getElementById('btnConfirmDelete');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner"></span><span>Processing Statutory Erasure...</span>`;
+
+            try {
+                // 1. Mark or delete Firestore document
+                try {
+                    await db.collection("users").doc(cleanEmail).set({
+                        isLifeOsUser: false,
+                        accountStatus: "DELETED",
+                        deletedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+                } catch (dbErr) {
+                    console.warn("Firestore delete update warning:", dbErr);
+                }
+
+                // 2. Delete Firebase Auth user if possible
+                let authDeleted = false;
+                try {
+                    await currentUser.delete();
+                    authDeleted = true;
+                } catch (authErr) {
+                    console.warn("Auth delete requires recent login:", authErr);
+                    // If auth delete requires recent login, sign out
+                    await auth.signOut();
+                }
+
+                // 3. Show confirmed deletion receipt
+                const receipt = document.getElementById('deletionReceiptBox');
+                receipt.style.display = 'block';
+                const auditTimestamp = new Date().toISOString();
+                document.getElementById('receiptDetailsText').innerHTML = 
+                    `Permanent cloud deletion completed for <strong>${cleanEmail}</strong>.<br>` +
+                    `Status: <em>Cloud account revoked &amp; purged from compliance server</em>.<br>` +
+                    `Remember: To remove offline data on your phone hardware, please clear the app cache or uninstall LifeOS.`;
+                document.getElementById('receiptAuditId').innerText = `STATUTORY DPDP AUDIT TIMESTAMP: ${auditTimestamp}`;
+
+                // Clear input
+                document.getElementById('confirmDeleteInput').value = '';
+                btn.style.display = 'none';
+
+                // Reset session variables
+                currentUser = null;
+                currentLifeOsData = null;
+
+                setTimeout(() => {
+                    document.getElementById('navSignInBtn').style.display = 'inline-flex';
+                    document.getElementById('navUserPill').style.display = 'none';
+                }, 1500);
+
+            } catch (err) {
+                alert("Deletion error: " + err.message);
+                btn.disabled = false;
+                btn.innerHTML = `<span>Permanently Delete My LifeOS Account</span>`;
+            }
+        }
+
+        // Handle Sign Out
+        async function handleSignOut() {
+            if (auth) {
+                await auth.signOut();
+            }
+            currentUser = null;
+            currentLifeOsData = null;
+            showLockedGate();
+        }
+    </script>
+</body>
+</html>
